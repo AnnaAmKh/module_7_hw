@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import re
 import shutil
 
@@ -18,7 +19,20 @@ for cyrillic, latin in zip(CYRILLIC_SYMBOLS, TRANSLATION):
 def normalize(name: str) -> str:
     translate_name = re.sub(r'\W', '_', name.translate(TRANS))
     return translate_name
+def handle_media(file_name: Path, target_folder: Path):
+    target_folder.mkdir(exist_ok=True, parents=True)
+    file_name.replace(target_folder / normalize(file_name.name))
 
+def handle_archive(file_name: Path, target_folder: Path):
+    target_folder.mkdir(exist_ok=True, parents=True)
+    folder_for_file = target_folder / normalize(file_name.name.replace(file_name.suffix, ''))
+    folder_for_file.mkdir(exist_ok=True, parents=True)
+    try:
+        shutil.unpack_archive(str(file_name.absolute()), str(folder_for_file.absolute()))
+    except shutil.ReadError:
+        folder_for_file.rmdir()
+        return
+    file_name.unlink()
 
 # Функція для сортування файлів та папок
 def sort_folder(folder_path):
@@ -28,7 +42,6 @@ def sort_folder(folder_path):
             file_extension = file.split('.')[-1].upper()
             file_path = os.path.join(root, file)
 
-            # Визначення папки, в яку переносити файл
             destination_folder = ''
             if file_extension in ('JPEG', 'JPG', 'PNG', 'SVG', 'TIF', 'JP2'):
                 destination_folder = 'images'
@@ -69,7 +82,6 @@ def sort_folder(folder_path):
             folder_path = os.path.join(root, folder)
             if not os.listdir(folder_path):
                 os.rmdir(folder_path)
-
 
 # Функція для розпакування архівів
 def unpack_archives(folder_path):
