@@ -8,5 +8,6 @@ setup(
     author='Anna Amelina',
     author_email='author@gmail.com',
     license='MIT',
-    packages=find_namespace_packages()
+    packages=find_namespace_packages(),
+    entry_points={'console_scripts': ['clear_folder=clear_folder.clear:main']}
 )
